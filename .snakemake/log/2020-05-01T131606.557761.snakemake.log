@@ -1,0 +1,5 @@
+Building DAG of jobs...
+MissingInputException in line 27 of /scratch/rhaast/ZI_funcparc/Snakefile:
+Missing input files for rule prepare_subcort:
+1.6
+funcparc/100610/temp/

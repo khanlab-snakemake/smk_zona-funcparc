@@ -3,11 +3,12 @@ hcp1200_dir: /scratch/rhaast/hcp1200
 
 input_dtseries: /scratch/rhaast/hcp1200/{subject}/MNINonLinear/Results/rfMRI_REST2_7T_AP/rfMRI_REST2_7T_AP_Atlas_1.6mm.dtseries.nii
 input_rsvolume: /scratch/rhaast/hcp1200/{subject}/MNINonLinear/Results/rfMRI_REST2_7T_AP/rfMRI_REST2_7T_AP.nii.gz
-input_movreg: /scratch/rhaast/hcp1200/{subject}/MNINonLinear/Results/rfMRI_REST2_7T_AP/Movement_Regressors.txt
+input_movreg: /scratch/rhaast/hcp1200/{subject}/MNINonLinear/Results/rfMRI_REST2_7T_AP/Movement_Regressors_dt.txt
 
 subcort_atlas: cfg/sub-MNI2009b_desc-allFSstyle_workbench.nii.gz
-hcpmmp_atlas: cfg/HCP-MMP_BigBrain1p6mm.32k_fs_LR.dlabel.nii
+hcpmmp_atlas: cfg/HCP-MMP_BigBrain1p6mm.59k_fs_LR.dlabel.nii
 
 singularity_connectomewb: /project/6007967/software/transparentsingularity/connectome-workbench_1.4.1_20191117.simg/connectome-workbench_1.4.1_20191117.simg
+singularity_ciftify: /project/6007967/akhanf/singularity/bids-apps/tigrlab_fmriprep_ciftify_v1.3.2-2.3.3.sif
 
 

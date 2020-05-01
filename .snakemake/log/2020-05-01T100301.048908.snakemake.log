@@ -1,0 +1,83 @@
+Building DAG of jobs...
+Using shell: /cvmfs/soft.computecanada.ca/nix/var/nix/profiles/16.09/bin/bash
+Provided cores: 1 (use --cores to define parallelism)
+Rules claiming more threads will be scaled down.
+Job counts:
+	count	jobs
+	1	all
+	1	cifti_separate
+	1	clean_tseries
+	1	create_dtseries
+	1	extract_confounds
+	1	parcellate_tseries
+	6
+
+[Fri May  1 10:03:01 2020]
+rule cifti_separate:
+    input: /scratch/rhaast/hcp1200/100610/MNINonLinear/Results/rfMRI_REST2_7T_AP/rfMRI_REST2_7T_AP_Atlas_1.6mm.dtseries.nii
+    output: funcparc/100610/input/rfMRI_REST2_7T_AP.L.59k_fs_LR.func.gii, funcparc/100610/input/rfMRI_REST2_7T_AP.R.59k_fs_LR.func.gii
+    log: logs/cifti_separate/100610.log
+    jobid: 5
+    wildcards: subject=100610
+
+Activating singularity image /project/6007967/software/transparentsingularity/connectome-workbench_1.4.1_20191117.simg/connectome-workbench_1.4.1_20191117.simg
+[Fri May  1 10:03:29 2020]
+Finished job 5.
+1 of 6 steps (17%) done
+
+[Fri May  1 10:03:29 2020]
+rule create_dtseries:
+    input: /scratch/rhaast/hcp1200/100610/MNINonLinear/Results/rfMRI_REST2_7T_AP/rfMRI_REST2_7T_AP.nii.gz, cfg/sub-MNI2009b_desc-allFSstyle_workbench.nii.gz, funcparc/100610/input/rfMRI_REST2_7T_AP.L.59k_fs_LR.func.gii, funcparc/100610/input/rfMRI_REST2_7T_AP.R.59k_fs_LR.func.gii
+    output: funcparc/100610/input/rfMRI_REST2_7T_AP.59k_fs_LR.dtseries.nii
+    log: logs/create_dtseries/100610.log
+    jobid: 3
+    wildcards: subject=100610
+
+Activating singularity image /project/6007967/software/transparentsingularity/connectome-workbench_1.4.1_20191117.simg/connectome-workbench_1.4.1_20191117.simg
+[Fri May  1 10:04:15 2020]
+Finished job 3.
+2 of 6 steps (33%) done
+
+[Fri May  1 10:04:15 2020]
+rule extract_confounds:
+    input: /scratch/rhaast/hcp1200/100610/MNINonLinear/Results/rfMRI_REST2_7T_AP/Movement_Regressors.txt
+    output: funcparc/100610/input/confounds.tsv
+    jobid: 4
+    wildcards: subject=100610
+
+[Fri May  1 10:04:16 2020]
+Finished job 4.
+3 of 6 steps (50%) done
+
+[Fri May  1 10:04:16 2020]
+rule clean_tseries:
+    input: funcparc/100610/input/rfMRI_REST2_7T_AP.59k_fs_LR.dtseries.nii, funcparc/100610/input/confounds.tsv
+    output: funcparc/100610/input_cleaned/rfMRI_REST2_7T_AP.59k_fs_LR.dtseries.nii
+    log: logs/clean_dtseries/100610.log
+    jobid: 2
+    wildcards: subject=100610
+
+Activating singularity image /project/6007967/akhanf/singularity/bids-apps/tigrlab_fmriprep_ciftify_v1.3.2-2.3.3.sif
+[Fri May  1 10:06:44 2020]
+Finished job 2.
+4 of 6 steps (67%) done
+
+[Fri May  1 10:06:44 2020]
+rule parcellate_tseries:
+    input: funcparc/100610/input_cleaned/rfMRI_REST2_7T_AP.59k_fs_LR.dtseries.nii, cfg/HCP-MMP_BigBrain1p6mm.32k_fs_LR.dlabel.nii
+    output: funcparc/100610/input_parcellated/rfMRI_REST2_7T_AP.59k_fs_LR.ptseries.nii
+    jobid: 1
+    wildcards: subject=100610
+
+Activating singularity image /project/6007967/software/transparentsingularity/connectome-workbench_1.4.1_20191117.simg/connectome-workbench_1.4.1_20191117.simg
+[Fri May  1 10:06:45 2020]
+Error in rule parcellate_tseries:
+    jobid: 1
+    output: funcparc/100610/input_parcellated/rfMRI_REST2_7T_AP.59k_fs_LR.ptseries.nii
+    shell:
+        wb_command -cifti-parcellate funcparc/100610/input_cleaned/rfMRI_REST2_7T_AP.59k_fs_LR.dtseries.nii cfg/HCP-MMP_BigBrain1p6mm.32k_fs_LR.dlabel.nii COLUMN funcparc/100610/input_parcellated/rfMRI_REST2_7T_AP.59k_fs_LR.ptseries.nii
+        (one of the commands exited with non-zero exit code; note that snakemake uses bash strict mode!)
+
+Shutting down, this might take some time.
+Exiting because a job execution failed. Look above for error message
+Complete log: /scratch/rhaast/ZI_funcparc/.snakemake/log/2020-05-01T100301.048908.snakemake.log

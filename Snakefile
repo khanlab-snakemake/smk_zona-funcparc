@@ -24,9 +24,22 @@ rule cifti_separate:
     shell:
         'wb_command -cifti-separate {input} COLUMN -metric CORTEX_LEFT {output.lh} -metric CORTEX_RIGHT {output.rh} &> {log}'
 
+rule prepare_subcort:
+    input:
+        vol = lambda wildcards: glob(config['input_rsvolume'].format(**wildcards)),
+        rois = config['subcort_atlas']
+    output:
+        out = 'funcparc/{subject}/input/rfMRI_REST2_7T_AP_AtlasSubcortical.nii.gz'
+    params:
+        sigma = 1.6,
+        temp = 'funcparc/{subject}/temp'
+    singularity: config['singularity_connectomewb']
+    log: 'logs/prepare_subcort/{subject}.log'
+    shell: 'scripts/prep_subcortical.sh {input.vol} {input.rois} {params.temp} {params.sigma} {output.out} &> {log}'
+
 rule create_dtseries:
     input: 
-        vol = lambda wildcards: glob(config['input_rsvolume'].format(**wildcards)),
+        vol = rules.prepare_subcort.output.out,
         rois = config['subcort_atlas'],
 	lh = rules.cifti_separate.output.lh,
 	rh = rules.cifti_separate.output.rh
@@ -50,6 +63,7 @@ rule clean_tseries:
         dtseries = rules.create_dtseries.output,
         confounds = rules.extract_confounds.output
     output: 'funcparc/{subject}/input_cleaned/rfMRI_REST2_7T_AP.59k_fs_LR.dtseries.nii'
+    singularity: config['singularity_ciftify']
     log: 'logs/clean_dtseries/{subject}.log'
     shell:
         'ciftify_clean_img --output-file={output} --detrend --standardize --confounds-tsv={input.confounds} --low-pass=0.08 --high-pass=0.009 --tr=1 --verbose {input.dtseries}'

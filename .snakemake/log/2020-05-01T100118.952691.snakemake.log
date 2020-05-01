@@ -1,0 +1,9 @@
+KeyboardInterrupt in line 3 of /scratch/rhaast/ZI_funcparc/Snakefile.
+  File "/scratch/rhaast/ZI_funcparc/Snakefile", line 3, in <module>
+  File "/project/6007967/akhanf/opt/virtualenvs/snakemake/lib/python3.7/site-packages/pandas/__init__.py", line 11, in <module>
+  File "/project/6007967/akhanf/opt/virtualenvs/snakemake/lib/python3.7/site-packages/numpy/__init__.py", line 142, in <module>
+  File "/project/6007967/akhanf/opt/virtualenvs/snakemake/lib/python3.7/site-packages/numpy/core/__init__.py", line 78, in <module>
+  File "/project/6007967/akhanf/opt/virtualenvs/snakemake/lib/python3.7/site-packages/numpy/core/numeric.py", line 29, in <module>
+  File "/project/6007967/akhanf/opt/virtualenvs/snakemake/lib/python3.7/site-packages/numpy/core/shape_base.py", line 14, in <module>
+  File "/project/6007967/akhanf/opt/virtualenvs/snakemake/lib/python3.7/site-packages/numpy/core/fromnumeric.py", line 2845, in <module>
+  File "/project/6007967/akhanf/opt/virtualenvs/snakemake/lib/python3.7/site-packages/numpy/core/overrides.py", line 181, in decorator

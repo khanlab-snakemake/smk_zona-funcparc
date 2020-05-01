@@ -1,0 +1,16 @@
+Processing subcortical fMRI timeseries to match surface data
+
+- Creating subject-roi subcortical cifti at same resolution as output
+	wb_command -cifti-create-dense-timeseries funcparc/100610/temp/rfMRI_REST2_7T_AP_temp_atlas.dtseries.nii
+	-volume /scratch/rhaast/hcp1200/100610/MNINonLinear/Results/rfMRI_REST2_7T_AP/rfMRI_REST2_7T_AP.nii.gz
+	cfg/sub-MNI2009b_desc-allFSstyle_workbench.nii.gz
+- Dilating out zeros
+	wb_command -cifti-dilate funcparc/100610/temp/rfMRI_REST2_7T_AP_temp_atlas.dtseries.nii COLUMN 0 30
+	funcparc/100610/temp/rfMRI_REST2_7T_AP_temp_atlas_dilate.dtseries.nii
+- Smoothing and resampling
+	wb_command -cifti-smoothing funcparc/100610/temp/rfMRI_REST2_7T_AP_temp_atlas_dilate.dtseries.nii 0 1.6 COLUMN
+	funcparc/100610/temp/rfMRI_REST2_7T_AP_temp_atlas_smooth.dtseries.nii -fix-zeros-volume
+	wb_command -cifti-dilate funcparc/100610/temp/rfMRI_REST2_7T_AP_temp_atlas_smooth.dtseries.nii COLUMN 0 30
+	funcparc/100610/temp/rfMRI_REST2_7T_AP_temp_atlas_dilate.dtseries.nii
+	wb_command -cifti-separate funcparc/100610/temp/rfMRI_REST2_7T_AP_temp_atlas_dilate.dtseries.nii COLUMN -volume-all
+	funcparc/100610/input/rfMRI_REST2_7T_AP_AtlasSubcortical.nii.gz

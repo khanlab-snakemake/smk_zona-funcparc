@@ -35,7 +35,7 @@ rule prepare_subcort:
         temp = 'funcparc/{subject}/temp'
     singularity: config['singularity_connectomewb']
     log: 'logs/prepare_subcort/{subject}.log'
-    shell: 'scripts/prep_subcortical.sh {input.vol} {input.rois} {params.temp} {params.sigma} {output.out} &> {log}'
+    run: 'scripts/prep_subcortical.sh {input.vol} {input.rois} {params.temp} {params.sigma} {output.out} &> {log}'
 
 rule create_dtseries:
     input: 
@@ -50,13 +50,14 @@ rule create_dtseries:
         'wb_command -cifti-create-dense-timeseries {output} -volume {input.vol} {input.rois} -left-metric {input.lh} -right-metric {input.rh} &> {log}'
 
 rule extract_confounds:
-    input: lambda wildcards: glob(config['input_movreg'].format(**wildcards))
-    output: 'funcparc/{subject}/input/confounds.tsv'
-    run:
-        import pandas as pd
-        movement_regressors = input[0]
-        parameters = pd.read_csv(movement_regressors, header=None, delim_whitespace=True)
-        parameters.to_csv(output[0],sep='\t')
+    input:
+        vol = lambda wildcards: glob(config['input_rsvolume'].format(**wildcards)),
+        rois = lambda wildcards: glob(config['input_rois'].format(**wildcards)),
+        movreg = lambda wildcards: glob(config['input_movreg'].format(**wildcards))
+    output:
+        confounds = 'funcparc/{subject}/input/confounds.tsv'
+    log: 'logs/extract_confounds/{subject}.log'
+    script: 'scripts/extract_confounds.py'
 
 rule clean_tseries:
     input:

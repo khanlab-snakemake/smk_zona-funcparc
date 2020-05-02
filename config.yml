@@ -3,6 +3,7 @@ hcp1200_dir: /scratch/rhaast/hcp1200
 
 input_dtseries: /scratch/rhaast/hcp1200/{subject}/MNINonLinear/Results/rfMRI_REST2_7T_AP/rfMRI_REST2_7T_AP_Atlas_1.6mm.dtseries.nii
 input_rsvolume: /scratch/rhaast/hcp1200/{subject}/MNINonLinear/Results/rfMRI_REST2_7T_AP/rfMRI_REST2_7T_AP.nii.gz
+input_rois: /scratch/rhaast/hcp1200/{subject}/MNINonLinear/ROIs/Atlas_wmparc.1.60.nii.gz
 input_movreg: /scratch/rhaast/hcp1200/{subject}/MNINonLinear/Results/rfMRI_REST2_7T_AP/Movement_Regressors_dt.txt
 
 subcort_atlas: cfg/sub-MNI2009b_desc-allFSstyle_workbench.nii.gz

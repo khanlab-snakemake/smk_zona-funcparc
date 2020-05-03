@@ -35,7 +35,7 @@ rule prepare_subcort:
         temp = 'funcparc/{subject}/temp'
     singularity: config['singularity_connectomewb']
     log: 'logs/prepare_subcort/{subject}.log'
-    run: 'scripts/prep_subcortical.sh {input.vol} {input.rois} {params.temp} {params.sigma} {output.out} &> {log}'
+    script: 'scripts/prep_subcortical.sh {input.vol} {input.rois} {params.temp} {params.sigma} {output.out} &> {log}'
 
 rule create_dtseries:
     input: 
@@ -54,8 +54,7 @@ rule extract_confounds:
         vol = lambda wildcards: glob(config['input_rsvolume'].format(**wildcards)),
         rois = lambda wildcards: glob(config['input_rois'].format(**wildcards)),
         movreg = lambda wildcards: glob(config['input_movreg'].format(**wildcards))
-    output:
-        confounds = 'funcparc/{subject}/input/confounds.tsv'
+    output: 'funcparc/{subject}/input/confounds.tsv'
     log: 'logs/extract_confounds/{subject}.log'
     script: 'scripts/extract_confounds.py'
 
@@ -64,7 +63,7 @@ rule clean_tseries:
         dtseries = rules.create_dtseries.output,
         confounds = rules.extract_confounds.output
     output: 'funcparc/{subject}/input_cleaned/rfMRI_REST2_7T_AP.59k_fs_LR.dtseries.nii'
-    singularity: config['singularity_ciftify']
+    #singularity: config['singularity_ciftify']
     log: 'logs/clean_dtseries/{subject}.log'
     shell:
         'ciftify_clean_img --output-file={output} --detrend --standardize --confounds-tsv={input.confounds} --low-pass=0.08 --high-pass=0.009 --tr=1 --verbose {input.dtseries}'

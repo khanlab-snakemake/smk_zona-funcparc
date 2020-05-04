@@ -7,16 +7,16 @@ from nilearn.input_data import NiftiLabelsMasker
 atlas = nib.load(snakemake.input.rois[0])
 labels = atlas.get_fdata()
 
-# First extract timeseries for CSF and WM labels
+# Relabel and extract timeseries for CSF and WM labels
 img = np.zeros(labels.shape)
-img[(labels == 4) | (labels == 43)] = 1
-img[labels > 5000] = 2
+img[(labels == 4) | (labels == 43)] = 1 # CSF
+img[labels > 5000] = 2 # WM
 
 tmp = Nifti1Image(img, atlas.affine, atlas.header)
 masker = NiftiLabelsMasker(labels_img=tmp, standardize=False)
 time_series1 = masker.fit_transform(snakemake.input.vol[0])
 
-# Then for the whole brain (i.e., 'global')
+# Then for whole brain (i.e., 'global')
 brain = np.zeros(labels.shape)
 brain[labels != 0] = 1
 
@@ -27,7 +27,7 @@ time_series2 = masker.fit_transform(snakemake.input.vol[0])
 # Concatenate timeseries
 df1 = pd.DataFrame({'CSF': time_series1[:, 0],'WhiteMatter': time_series1[:, 1], 'GlobalSignal': time_series2[:, 0]})
 
-# Load movement parameters
+# Load movement parameters (and their derivatives)
 names = ['X','Y','Z','RotX','RotY','RotZ','Xd','Yd','Zd','RotXd','RotYd','RotZd']
 df2 = pd.read_csv(snakemake.input.movreg[0], names=names, header=None, delim_whitespace=True)
 

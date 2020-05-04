@@ -1,9 +1,6 @@
 import numpy as np
 import pandas as pd
 import nibabel as nib
-from nilearn import plotting
-from nilearn.connectome import ConnectivityMeasure
-from nilearn.input_data import NiftiLabelsMasker
 
 # Function to calculate correlation between seed voxels and target ROIs
 def corr2_coeff(A,B):
@@ -56,5 +53,4 @@ fzmatrix =  np.arctanh(corrmatrix)
 df = pd.DataFrame(fzmatrix,columns=labels)
 
 # Write to output files
-# df.to_csv(snakemake.output.csv[0],index=False)
 np.savez(snakemake.output[0], indices=indices,corr=fzmatrix)

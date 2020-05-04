@@ -11,7 +11,6 @@ NameOffMRI=${invol%.nii.gz*}
 NameOffMRI=`basename $NameOffMRI`
 
 mkdir -p $tempdir
-#mkdir -p `basename $outvol`
 
 echo "Processing subcortical fMRI timeseries to match surface data"
 echo ""

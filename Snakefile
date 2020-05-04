@@ -12,7 +12,7 @@ wildcard_constraints:
     subject="[0-9]+"
 
 rule all:
-    input: 'funcparc/clustering/correlation_matrix_group.npz'
+    input: expand('funcparc/clustering/seed-ZIR_method-spectralcosine_k-{k}_cluslabels.nii.gz',k=range(2,config['max_k']+1),allow_missing=True)
 
 rule cifti_separate:
     input: lambda wildcards: glob(config['input_dtseries'].format(**wildcards))
@@ -20,9 +20,8 @@ rule cifti_separate:
         lh = 'funcparc/{subject}/input/rfMRI_REST2_7T_AP.L.59k_fs_LR.func.gii',
         rh = 'funcparc/{subject}/input/rfMRI_REST2_7T_AP.R.59k_fs_LR.func.gii'
     singularity: config['singularity_connectomewb']
-    log: 'logs/cifti_separate/{subject}.log'
     shell:
-        'wb_command -cifti-separate {input} COLUMN -metric CORTEX_LEFT {output.lh} -metric CORTEX_RIGHT {output.rh} &> {log}'
+        'wb_command -cifti-separate {input} COLUMN -metric CORTEX_LEFT {output.lh} -metric CORTEX_RIGHT {output.rh}'
 
 rule prepare_subcort:
     input:
@@ -33,9 +32,9 @@ rule prepare_subcort:
     params:
         sigma = 1.6,
         temp = 'funcparc/{subject}/temp'
-    singularity: config['singularity_connectomewb']
+    #singularity: config['singularity_connectomewb']
     log: 'logs/prepare_subcort/{subject}.log'
-    script: 'scripts/prep_subcortical.sh {input.vol} {input.rois} {params.temp} {params.sigma} {output.out} &> {log}'
+    shell: 'scripts/prep_subcortical.sh {input.vol} {input.rois} {params.temp} {params.sigma} {output.out} &> {log}'
 
 rule create_dtseries:
     input: 
@@ -45,9 +44,8 @@ rule create_dtseries:
         rh = rules.cifti_separate.output.rh
     output: 'funcparc/{subject}/input/rfMRI_REST2_7T_AP.59k_fs_LR.dtseries.nii'
     singularity: config['singularity_connectomewb']
-    log: 'logs/create_dtseries/{subject}.log'
     shell:
-        'wb_command -cifti-create-dense-timeseries {output} -volume {input.vol} {input.rois} -left-metric {input.lh} -right-metric {input.rh} &> {log}'
+        'wb_command -cifti-create-dense-timeseries {output} -volume {input.vol} {input.rois} -left-metric {input.lh} -right-metric {input.rh}'
 
 rule extract_confounds:
     input:
@@ -66,7 +64,7 @@ rule clean_tseries:
     #singularity: config['singularity_ciftify']
     log: 'logs/clean_dtseries/{subject}.log'
     shell:
-        'ciftify_clean_img --output-file={output} --detrend --standardize --confounds-tsv={input.confounds} --low-pass=0.08 --high-pass=0.009 --tr=1 --verbose {input.dtseries}'
+        'ciftify_clean_img --output-file={output} --detrend --standardize --confounds-tsv={input.confounds} --low-pass=0.08 --high-pass=0.009 --tr=1 --verbose {input.dtseries} &> {log}'
 
 rule parcellate_tseries:
     input:
@@ -82,17 +80,11 @@ rule compute_correlation:
         ptseries = rules.parcellate_tseries.output,
         vol = rules.clean_tseries.output
     output: 'funcparc/{subject}/output/correlation_matrix.npz'
-        # csv = 'funcparc/{subject}/output/correlation_matrix.csv',
-        # npz = 'funcparc/{subject}/output/correlation_matrix.npz'
-    log: 'logs/compute_correlation/{subject}.log'
     script: 'scripts/compute_correlation.py'
 
 rule combine_correlation:
     input: expand('funcparc/{subject}/output/correlation_matrix.npz',subject=subjects,allow_missing=True)
-    output:
-        #csv = 'funcparc/clustering/correlation_matrix_group.csv',
-        npz = 'funcparc/clustering/correlation_matrix_group.npz'
-    log: 'logs/group/combine_correlation.log'
+    output: 'funcparc/clustering/correlation_matrix_group.npz'
     run:
         import numpy as np
 
@@ -104,15 +96,15 @@ rule combine_correlation:
             data = np.load(npz)
             combined[i,:,:] = data['corr']
 
-        np.savez(output.npz[0], corr_group=combined,indices=data['indices'])
+        np.savez(output[0], corr_group=combined,indices=data['indices'])
 
-# rule spectral_clustering:
-#     input:
-#         correlation = 'funcparc/clustering/correlation_matrix_group.npz',
-#         rois = config['subcort_atlas'],
-#     params:
-#         max_k = config['max_k']
-#     output:
-#         #labels = 'funcparc/{subject}/clustering/cluster_labels.csv',
-#         niftis = expand('funcparc/clustering/group_space-seed-ZIR_method-spectralcosine_k-{k}_cluslabels.nii.gz',k=range(2,config['max_k']+1),allow_missing=True)
-#     script: 'scripts/spectral_clustering.py'
+rule spectral_clustering:
+    input:
+        correlation = rules.combine_correlation.output,
+        rois = config['subcort_atlas'],
+    params:
+        max_k = config['max_k']
+    output:
+        niftis = expand('funcparc/clustering/seed-ZIR_method-spectralcosine_k-{k}_cluslabels.nii.gz',k=range(2,config['max_k']+1),allow_missing=True),
+        labels = 'funcparc/clustering/cluster_labels.csv'
+    script: 'scripts/spectral_clustering.py'

@@ -1,39 +1,47 @@
 import numpy as np
 import pandas as pd
+import nibabel as nib
 from sklearn.cluster import SpectralClustering
 
+# Mute warning in case seed has same number of voxels as target ROIs
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning)
+
+# Function to save niftis
 def save_label_nii (labelimg,affine,header,out_nifti):
     img = nib.Nifti1Image(labelimg,affine=affine,header=header)
     nib.save(img,out_nifti)
 
-data = pd.read_csv(snakemake.input.correlation[0])
+# Load data
+data = np.load(snakemake.input.correlation[0])
+correlation = data['corr_group']
+indices = data['indices']
 
-cluster_range = range(2,snakemake.params.max_k+1)
-labels = np.zeros((data.shape[0],len(cluster_range)))
-
-afile = snakemake.input.rois[0]
+afile = snakemake.input.rois
 atlas = nib.load(afile)
 atlas_data = atlas.get_fdata()
 
-# pfile = snakemake.input.ptseries[0]
-# p = nib.load(pfile)
+# Concat subjects
+corr = np.moveaxis(correlation,0,2)
+corr_concat = corr.reshape([corr.shape[0],corr.shape[1]*corr.shape[2]])
+corr_concat += 1 # Spectral clustering doesn't like negative input apparantly
 
-# for ip in np.arange(0,n_parcels):
-#     parcel = p.header.get_index_map(1)[ip+3]
-#     name = parcel.name
-#     if name == "BRAIN_STEM":
-#         name = "ZIR"
-#         zir_indices = parcel.voxel_indices_ijk
+# Output
+out_nii_list = snakemake.output.niftis
+cluster_range = range(2,snakemake.params.max_k+1)
+labels = np.zeros((corr_concat.shape[0],len(cluster_range)))
 
 # Run spectral clustering
 for i,k in enumerate(cluster_range):
-    clustering = SpectralClustering(n_clusters=k, assign_labels="discretize",random_state=0,affinity='cosine').fit(abs(data.values))
+    clustering = SpectralClustering(n_clusters=k, assign_labels="discretize",random_state=0,affinity='cosine').fit(corr_concat)
     labels[:,i] = clustering.labels_
     
     labelimg = np.zeros(atlas_data.shape)
     for j in range(0,len(atlas_data[atlas_data==16])):
-        labelimg[zir_indices[j][0],zir_indices[j][1],zir_indices[j][2]] = labels[j,i]
-    save_label_nii(labelimg,atlas.affine,atlas.header,snakemake.output.niftis[i])
+        labelimg[indices[j][0],indices[j][1],indices[j][2]] = labels[j,i]+1
+    print(f'i={i}, k={k},saving {out_nii_list[i]}')
+    save_label_nii(labelimg,atlas.affine,atlas.header,out_nii_list[i])
 
-#df = pd.DataFrame(labels,columns=cluster_range)
-#df.to_csv(snakemake.output.labels[0])
+# Save to CSV file
+df = pd.DataFrame(labels,columns=cluster_range)
+df.to_csv(snakemake.output.labels)

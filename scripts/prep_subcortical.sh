@@ -11,7 +11,7 @@ NameOffMRI=${invol%.nii.gz*}
 NameOffMRI=`basename $NameOffMRI`
 
 mkdir -p $tempdir
-mkdir -p `basename $outvol`
+#mkdir -p `basename $outvol`
 
 echo "Processing subcortical fMRI timeseries to match surface data"
 echo ""
@@ -45,4 +45,4 @@ echo -e "\twb_command -cifti-smoothing $tempdir/${NameOffMRI}_temp_atlas_dilate.
 } | fmt -w 150
 
 	wb_command -cifti-separate $tempdir/${NameOffMRI}_temp_atlas_dilate.dtseries.nii COLUMN -volume-all $outvol
-	rm -f $tempdir
+	rm -rf $tempdir

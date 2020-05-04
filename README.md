@@ -34,9 +34,11 @@ MODULEPATH=/project/6007967/software/transparentsingularity/modules:$MODULEPATH
 export MODULEPATH
 ```
 
-4. After cloning repository, run Snakemake workflow from within folder
+4. After cloning repository, run Snakemake workflow from within folder (or use [snakemake_remotebatch](https://github.com/khanlab/neuroglia-helpers/blob/master/bin/snakemake_remotebatch) for parallel processing of subjects)
 
 ```
 module load connectome-workbench
-snakemake --use-singuliarty
+snakemake --use-singularity
+
+snakemake_remotebatch combine_correlation NUMBER_OF_SUBJECTS
 ```

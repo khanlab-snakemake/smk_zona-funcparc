@@ -1,4 +1,4 @@
 funcparc/
-.config/
-.snakemake/
 logs/
+.snakemake/
+.config/

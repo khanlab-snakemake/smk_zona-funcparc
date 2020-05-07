@@ -10,35 +10,20 @@ This is a Snakemake workflow for performing functional connectivity-based segmen
 * Roy Haast (@royhaast)
 
 ## Usage
-Workflow depends on Snakemake, [Ciftify](https://github.com/edickie/ciftify) and [Connectome Workbench](https://www.humanconnectome.org/software/get-connectome-workbench) to be installed, and the required HCP data (7T fMRI REST + extended) to be unzipped into the ```hcp1200``` folder specified in the config file.
+Workflow depends on Snakemake, and [Ciftify](https://github.com/edickie/ciftify) and [Connectome Workbench](https://www.humanconnectome.org/software/get-connectome-workbench) singularity images to be present. Optimized for HCP data (requires: 7T_REST_1.6mm_preproc + extended, and 3T_Structural_1.6mm_preproc packages).
 
-1. On Graham, create virtual environment
-
-```
-module load python/3
-virtualenv $HOME/venv/funcparc
-source $HOME/venv/funcparc/bin/activate
-```
-
-2. Install requirements
+After cloning repository, run Snakemake workflow from within folder:
 
 ```
-pip install ciftify
-pip install snakemake
+snakemake --use-singularity --singularity-args '\-e'
 ```
 
-3. Add transparant singularity modules ([Khanlab](https://github.com/khanlab) specific) location to MODULEPATH (in case it is not already)
+Or in case of large number of subjects/jobs, you can setup the [cc-slurm profile](https://github.com/khanlab/cc-slurm) for parallel processing of subjects:
 
 ```
-MODULEPATH=/project/6007967/software/transparentsingularity/modules:$MODULEPATH
-export MODULEPATH
+snakemake --profile cc-slurm
 ```
 
-4. After cloning repository, run Snakemake workflow from within folder (or use [snakemake_remotebatch](https://github.com/khanlab/neuroglia-helpers/blob/master/bin/snakemake_remotebatch) for parallel processing of subjects)
-
-```
-module load connectome-workbench
-snakemake --use-singularity
-
-snakemake_remotebatch combine_correlation NUMBER_OF_SUBJECTS
-```
+## TO DO
+- Add rules to evaluate number of clusters
+- Increase flexibility to allow other seed ROIs
